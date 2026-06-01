@@ -1,0 +1,35 @@
+# Render Blueprint — backend FastAPI + PostgreSQL (region EU/Frankfurt).
+# Uzycie: Render → New → Blueprint → wskaz repo dzienisz/kantor (ten plik na branchu main).
+services:
+  - type: web
+    name: kantor-backend
+    runtime: docker
+    repo: https://github.com/dzienisz/kantor
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kantor-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: admin
+      # Ustaw recznie w panelu Render (Environment) — mocne haslo.
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: RUN_SCHEDULER
+        value: "true"
+      # Ustaw na adres frontu (Vercel) po jego wdrozeniu; na start moze byc "*".
+      - key: CORS_ORIGINS
+        sync: false
+
+databases:
+  - name: kantor-db
+    plan: free
+    region: frankfurt
