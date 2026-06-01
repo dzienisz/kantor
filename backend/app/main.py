@@ -38,8 +38,10 @@ app = FastAPI(title="KANTOR API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in settings.cors_origins.split(",")],
-    allow_credentials=True,
+    allow_origins=settings.cors_origin_list,
+    # Autoryzacja oparta o naglowek Bearer, nie ciasteczka — przy "*" nie wlaczamy credentials
+    # (Starlette nie pozwala laczyc wildcard origin z allow_credentials=True).
+    allow_credentials=not settings.cors_allow_wildcard,
     allow_methods=["*"],
     allow_headers=["*"],
 )

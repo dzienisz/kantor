@@ -1,6 +1,13 @@
+import logging
+import secrets
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger("kantor")
+
+# Wartosci domyslne tylko do lokalnego developmentu — w produkcji ustaw przez .env.
+DEV_ADMIN_PASSWORD = "admin123"
 
 
 class Settings(BaseSettings):
@@ -10,13 +17,13 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///./kantor.db"
 
-    # Bezpieczenstwo / auth
-    secret_key: str = "zmien-mnie-w-produkcji-bardzo-tajny-klucz"
+    # Bezpieczenstwo / auth. Pusty -> losowy klucz na czas dzialania procesu (patrz get_settings).
+    secret_key: str = ""
     access_token_expire_minutes: int = 60 * 12
 
     # Domyslne konto administratora (tworzone przy seedowaniu)
     admin_username: str = "admin"
-    admin_password: str = "admin123"
+    admin_password: str = DEV_ADMIN_PASSWORD
 
     # NBP
     nbp_table: str = "A"  # tabela kursow srednich
@@ -24,10 +31,30 @@ class Settings(BaseSettings):
     nbp_refresh_minutes: int = 30
     nbp_fetch_on_startup: bool = True
 
-    # CORS
+    # CORS — lista origin po przecinku albo "*".
     cors_origins: str = "*"
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def cors_allow_wildcard(self) -> bool:
+        return "*" in self.cors_origin_list
 
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    if not settings.secret_key:
+        # Brak SECRET_KEY: generujemy losowy klucz, ale tokeny wygasna po restarcie.
+        settings.secret_key = secrets.token_urlsafe(48)
+        logger.warning(
+            "SECRET_KEY nie jest ustawiony — wygenerowano losowy klucz na czas dzialania "
+            "procesu. Ustaw SECRET_KEY w .env do produkcji (inaczej tokeny wygasaja po restarcie)."
+        )
+    if settings.admin_password == DEV_ADMIN_PASSWORD:
+        logger.warning(
+            "ADMIN_PASSWORD ma wartosc domyslna — zmien ja w .env przed wdrozeniem produkcyjnym."
+        )
+    return settings
