@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import { AuthProvider, RequireAuth } from "./auth";
 import HomePage from "./pages/HomePage";
 import AdminCurrencies from "./pages/admin/AdminCurrencies";
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      <Analytics />
     </AuthProvider>
   );
 }
