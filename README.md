@@ -63,6 +63,15 @@ cd backend && source .venv/bin/activate && pytest && ruff check .
 cd frontend && npm run lint && npm run build
 ```
 
+## Wdrożenie (produkcja)
+
+Rekomendacja: **backend + PostgreSQL na Railway**, **frontend na Vercel** (lub Cloudflare Pages).
+Pełna instrukcja krok po kroku: [`DEPLOY.md`](./DEPLOY.md).
+
+Kluczowe zmienne środowiskowe:
+- Backend: `DATABASE_URL` (Postgres), `SECRET_KEY`, `ADMIN_PASSWORD`, `CORS_ORIGINS` (adres frontu), `RUN_SCHEDULER`.
+- Frontend (build): `VITE_API_URL` (pełny URL backendu).
+
 ## Struktura
 
 ```

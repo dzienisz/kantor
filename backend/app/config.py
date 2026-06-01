@@ -17,6 +17,10 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///./kantor.db"
 
+    # Scheduler NBP. Przy wielu instancjach backendu ustaw na false poza jedna instancja,
+    # zeby nie pobierac kursow rownolegle (lub odswiezaj przez zewnetrzny cron + endpoint).
+    run_scheduler: bool = True
+
     # Bezpieczenstwo / auth. Pusty -> losowy klucz na czas dzialania procesu (patrz get_settings).
     secret_key: str = ""
     access_token_expire_minutes: int = 60 * 12
@@ -33,6 +37,20 @@ class Settings(BaseSettings):
 
     # CORS — lista origin po przecinku albo "*".
     cors_origins: str = "*"
+
+    @property
+    def sqlalchemy_database_url(self) -> str:
+        """Znormalizowany URL bazy dla SQLAlchemy.
+
+        Dostawcy (Railway/Heroku) podaja DATABASE_URL jako 'postgres://' albo
+        'postgresql://' — wymuszamy sterownik psycopg3 ('postgresql+psycopg://').
+        """
+        url = self.database_url
+        if url.startswith("postgres://"):
+            url = "postgresql+psycopg://" + url[len("postgres://"):]
+        elif url.startswith("postgresql://"):
+            url = "postgresql+psycopg://" + url[len("postgresql://"):]
+        return url
 
     @property
     def cors_origin_list(self) -> list[str]:
