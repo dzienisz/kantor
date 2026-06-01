@@ -27,6 +27,19 @@ Rekomendowany układ: **backend + PostgreSQL na Railway**, **frontend na Vercel*
 
 > `DATABASE_URL` w formacie `postgres://`/`postgresql://` jest automatycznie normalizowany do sterownika `psycopg3` — nic nie trzeba zmieniać ręcznie.
 
+### Alternatywa backendu: Render (EU/Frankfurt, darmowy)
+Przydatne, gdy darmowy Railway blokuje deploy w EU w godzinach szczytu. W repo jest `render.yaml` (Blueprint) tworzący web service (Docker) + darmowy PostgreSQL we Frankfurcie.
+
+1. https://render.com → zaloguj przez GitHub → **New** → **Blueprint** → wybierz repo `dzienisz/kantor` (Render odczyta `render.yaml` z `main`).
+2. Render utworzy `kantor-backend` (Docker, root `backend`) i bazę `kantor-db`. `DATABASE_URL` i `SECRET_KEY` ustawią się automatycznie.
+3. Uzupełnij zmienne oznaczone `sync: false`:
+   - `ADMIN_PASSWORD` = mocne hasło,
+   - `CORS_ORIGINS` = na start `*` (zawęzisz do adresu Vercela po kroku 2).
+4. **Apply** → poczekaj na build. Health check: `https://kantor-backend-xxxx.onrender.com/api/health` → `{"status":"ok"}`.
+5. Skopiuj URL backendu (`…onrender.com`) — użyjesz go jako `VITE_API_URL` w Vercelu.
+
+> Uwaga (free tier Render): usługa usypia po ~15 min bezczynności (pierwszy request ~30–50 s), a darmowy Postgres wygasa po ~30 dniach. Do produkcji: płatny plan lub Railway EU.
+
 ## 2. Frontend na Vercel
 
 1. https://vercel.com → **Add New… → Project** → import `dzienisz/kantor`.
