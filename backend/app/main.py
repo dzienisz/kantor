@@ -29,7 +29,8 @@ async def lifespan(app: FastAPI):
                 logger.warning("Nie udalo sie pobrac kursow NBP przy starcie", exc_info=True)
     finally:
         db.close()
-    start_scheduler()
+    if settings.run_scheduler:
+        start_scheduler()
     yield
     shutdown_scheduler()
 
